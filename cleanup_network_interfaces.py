@@ -17,20 +17,38 @@ preferences_file = "/Library/Preferences/SystemConfiguration/preferences.plist"
 with open(preferences_file,"rb") as fp:
 	data = plistlib.load(fp)
 
+removed_services = []
 services = list(data['NetworkServices'].keys())
+
 for service_id in services:
 	service = data['NetworkServices'][service_id]
-	name = service['UserDefinedName']
-	interface = service['Interface']['DeviceName']
-	
+
+	try:
+		name = service['UserDefinedName']
+	except:
+		continue
+
+	try:
+		interface = service['Interface']['DeviceName']
+	except:
+		print(f"{name} - Keep")
+		continue
+
 	keep = not interface.startswith("usbmodem")
 	
 	print(f"{name} ({interface}) - ",end="")
-	if keep: print("Keep")
-	else: print("Remove")
-	
-	if not keep:
+	if keep:
+		print("Keep")
+	else:
+		print("Remove")
+		removed_services.append(name)
 		del data['NetworkServices'][service_id]
 
 with open("output_preferences.plist","wb") as fp:
 	plistlib.dump(data,fp)
+
+print("")
+if removed_services:
+	print("And now:\nsudo cp output_preferences.plist /Library/Preferences/SystemConfiguration/preferences.plist")
+else:
+	print("No service removed, nothing to do")

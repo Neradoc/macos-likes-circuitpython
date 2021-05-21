@@ -7,12 +7,13 @@ sudo cp output_preferences.plist /Library/Preferences/SystemConfiguration/prefer
 
 Might not work on Big Sur's heightened security.
 Not tested with a reboot.
-There might a better way to do that using the defaults command, once the python script has found all the service_id to remove.
+There might be a better way to do that using the defaults command, once the python script has found all the service_id to remove.
 """
-
 import plistlib
+import subprocess
 
 preferences_file = "/Library/Preferences/SystemConfiguration/preferences.plist"
+output_file = "output_preferences.plist"
 
 with open(preferences_file,"rb") as fp:
 	data = plistlib.load(fp)
@@ -44,11 +45,17 @@ for service_id in services:
 		removed_services.append(name)
 		del data['NetworkServices'][service_id]
 
-with open("output_preferences.plist","wb") as fp:
+with open(output_file,"wb") as fp:
 	plistlib.dump(data,fp)
 
 print("")
 if removed_services:
-	print("And now:\nsudo cp output_preferences.plist /Library/Preferences/SystemConfiguration/preferences.plist")
+	print(f"And now:\nsudo cp {output_file} {preferences_file}")
+	print("Press ctrl-C to cancel, or press enter and type admin password when asked")
+	input()
+	try:
+		subprocess.run(["sudo", "cp", output_file, preferences_file])
+	except KeyboardInterrupt:
+		pass
 else:
 	print("No service removed, nothing to do")

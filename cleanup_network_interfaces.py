@@ -1,6 +1,9 @@
 """
-Generates a SystemConfiguration preferences file without the Circuitpython boards
-Removes everything that has an interface in "usbmodem"
+Generates a SystemConfiguration preferences file without the Circuitpython boards.
+Removes everything that has an interface in "usbmodem" from the active services list.
+
+The boards are still in the interface list, and will pop up in new settings but should not come back in the current settings.
+
 Creates a "output_preferences.plist" to replace the original with:
 
 sudo cp output_preferences.plist /Library/Preferences/SystemConfiguration/preferences.plist
@@ -14,9 +17,21 @@ import click
 import os
 import plistlib
 import subprocess
+import uuid
 
 PREFS_FILE = "/Library/Preferences/SystemConfiguration/preferences.plist"
-OUTPUT_FILE = "output_preferences.plist"
+OUTPUT_FILE = "/tmp/output_preferences.{}.plist".format(str(uuid.uuid4())[:8])
+
+
+def remove_in_services(data, service_id):
+    for skey, sett in data["Sets"].items():
+        ServiceOrder = sett["Network"]["Global"]["IPv4"]["ServiceOrder"]
+        if service_id in ServiceOrder:
+            ServiceOrder.remove(service_id)
+        services = sett["Network"]["Service"].keys()
+        if service_id in services:
+            # output.append(["Sets", skey, "Network", "Service", service_id])
+            del sett["Network"]["Service"][service_id]
 
 
 @click.group(invoke_without_command=True)
@@ -29,6 +44,8 @@ def main(yes):
     """
     Do the thing that this is supposed to do.
     """
+    click.secho(f"Note: this will modify your system configuration preferences:\n{PREFS_FILE}\nYou might want to back that up before validating anything.\n", fg="yellow")
+
     with open(PREFS_FILE, "rb") as fp:
         data = plistlib.load(fp)
 
@@ -56,7 +73,8 @@ def main(yes):
         else:
             click.secho(f"{name} ({interface}) - Remove", fg="red")
             removed_services.append(name)
-            del data["NetworkServices"][service_id]
+            # del data["NetworkServices"][service_id]
+            remove_in_services(data, service_id)
 
     with open(OUTPUT_FILE, "wb") as fp:
         plistlib.dump(data, fp)

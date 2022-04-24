@@ -28,10 +28,13 @@ def remove_in_services(data, service_id):
         ServiceOrder = sett["Network"]["Global"]["IPv4"]["ServiceOrder"]
         if service_id in ServiceOrder:
             ServiceOrder.remove(service_id)
-        services = sett["Network"]["Service"].keys()
-        if service_id in services:
-            # output.append(["Sets", skey, "Network", "Service", service_id])
-            del sett["Network"]["Service"][service_id]
+        try:
+            services = sett["Network"]["Service"].keys()
+            if service_id in services:
+                # output.append(["Sets", skey, "Network", "Service", service_id])
+                del sett["Network"]["Service"][service_id]
+        except KeyError:
+            pass
 
 
 @click.group(invoke_without_command=True)

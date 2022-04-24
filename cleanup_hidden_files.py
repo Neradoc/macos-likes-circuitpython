@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2022 Neradoc
+#
+# SPDX-License-Identifier: MIT
 """
-TODO: an applescript app/droplet version
+TODO: an applescript app/droplet version.
+Note: discotool includes that feature too.
 """
 import os
 import click

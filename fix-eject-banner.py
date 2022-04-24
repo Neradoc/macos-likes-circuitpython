@@ -1,4 +1,4 @@
-# This file © PaintYourDragon
+# SPDX-FileCopyrightText: Copyright (c) PaintYourDragon
 # https://gist.github.com/PaintYourDragon/a229f7c5f1992943a34ce1a5c7cb527c
 # https://blog.adafruit.com/2021/05/11/how-to-tone-down-macos-big-surs-circuitpy-eject-notifications/
 """

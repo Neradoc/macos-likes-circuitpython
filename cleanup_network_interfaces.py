@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2022 Neradoc
+#
+# SPDX-License-Identifier: MIT
 """
 Generates a SystemConfiguration preferences file without the Circuitpython boards.
 Removes everything that has an interface in "usbmodem" from the active services list.

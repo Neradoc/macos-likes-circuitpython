@@ -21,23 +21,29 @@ import os
 import plistlib
 import subprocess
 import uuid
+import traceback
 
 PREFS_FILE = "/Library/Preferences/SystemConfiguration/preferences.plist"
 OUTPUT_FILE = "/tmp/output_preferences.{}.plist".format(str(uuid.uuid4())[:8])
-
+DEBUG = False
 
 def remove_in_services(data, service_id):
     for skey, sett in data["Sets"].items():
-        ServiceOrder = sett["Network"]["Global"]["IPv4"]["ServiceOrder"]
-        if service_id in ServiceOrder:
-            ServiceOrder.remove(service_id)
+        try:
+            ServiceOrder = sett["Network"]["Global"]["IPv4"]["ServiceOrder"]
+            if service_id in ServiceOrder:
+                ServiceOrder.remove(service_id)
+        except KeyError as ex:
+            if DEBUG:
+                traceback.print_exception(ex,ex,ex.__traceback__)
         try:
             services = sett["Network"]["Service"].keys()
             if service_id in services:
                 # output.append(["Sets", skey, "Network", "Service", service_id])
                 del sett["Network"]["Service"][service_id]
-        except KeyError:
-            pass
+        except KeyError as ex:
+            if DEBUG:
+                traceback.print_exception(ex,ex,ex.__traceback__)
 
 
 @click.group(invoke_without_command=True)
@@ -46,10 +52,15 @@ def remove_in_services(data, service_id):
     is_flag=True,
     help="Validate changes without asking.",
 )
-def main(yes):
-    """
-    Do the thing that this is supposed to do.
-    """
+@click.option(
+    "--debug",
+    is_flag = True,
+    help="Debug prints in try/excepts.",
+)
+def main(yes, debug):
+    """This is the main part of the programm !"""
+    global DEBUG
+    DEBUG = debug
     click.secho(f"Note: this will modify your system configuration preferences:\n{PREFS_FILE}\nYou might want to back that up before validating anything.\n", fg="yellow")
 
     with open(PREFS_FILE, "rb") as fp:
